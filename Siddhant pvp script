@@ -1,0 +1,338 @@
+repeat task.wait() until game:IsLoaded() and game.Players.LocalPlayer
+
+-- 1. LOAD INTERFACE CORE WITH STRAW HAT PIRATE PALETTE
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "☠️ Siddhant Hub | Luffy Edition",
+   LoadingTitle = "Setting Sail... Bypassing Marine Filters",
+   LoadingSubtitle = "Gear 5 Engine Active (Delta/GT Hub)",
+   ConfigurationSaving = { Enabled = false },
+   Theme = "Default" -- Base fallback profile for theme configuration overrides
+})
+
+-- Modifying internal interface colors to Crimson Red, Charcoal, and Straw Gold
+pcall(function()
+    local ThemeManager = game:GetService("CoreGui"):FindFirstChild("Rayfield") or game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("Rayfield")
+    if ThemeManager then
+        local Main = ThemeManager:FindFirstChild("Main")
+        if Main then
+            Main.BackgroundColor3 = Color3.fromRGB(20, 20, 25) -- Deep Black Sea Background
+            local Topbar = Main:FindFirstChild("Topbar")
+            if Topbar then Topbar.BackgroundColor3 = Color3.fromRGB(180, 20, 30) end -- Straw Hat Crimson
+        end
+    end
+end)
+
+-- Core Engine Services Initialization
+local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local UIS = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
+
+-- Syncing Configuration Global Variables
+_G.G_S_SilentAimM1R           = false
+_G.G_S_SilentAimTargetPlayers = false
+_G.G_S_SilentAimTargetMobs    = false
+_G.G_S_SilentAimShowFOV       = false
+_G.G_S_SilentAimFOV           = 150
+_G.G_S_SilentAimPart          = "HumanoidRootPart"
+_G.G_S_SilentAimTeamCheck     = false
+
+_G.G_S_FastAttack             = false
+_G.G_S_FastAttackMode         = "Mode 2"
+_G.G_S_InfiniteRange          = false
+_G.G_S_AttackMobs             = false 
+_G.G_S_jumpEnabled            = false
+_G.G_S_jumpHeight             = 50
+_G.G_S_WalkOnWater            = false
+
+-- 2. INITIALIZE ONE PIECE REBRANDED NAVIGATION TABS
+local FarmTab = Window:CreateTab("Gum-Gum Farm", 4483362458)
+local AimbotTab = Window:CreateTab("Conqueror's Haki", 4483362458)
+local MovementTab = Window:CreateTab("Gear 5 Speed", 4370345144)
+
+-- ============================================================================
+-- TAB 1: AUTOMATED GRINDING MECHANICS (GUM-GUM FARM)
+-- ============================================================================
+FarmTab:CreateToggle({
+   Name = "Activate Gatling Auto-Farm (Teleport Lock)",
+   CurrentValue = false,
+   Callback = function(Value)
+        _G.G_S_AttackMobs = Value
+   end,
+})
+
+FarmTab:CreateParagraph({
+    Title = "Gum-Gum Gatling Logic:",
+    Content = "Locks onto hostile units across the sea, warps your character directly to their location, and punches at maximum tick rates until the quest reward drops."
+})
+
+-- ============================================================================
+-- TAB 2: SILENT AIMBOT OPTIONS (CONQUEROR'S HAKI)
+-- ============================================================================
+AimbotTab:CreateToggle({
+   Name = "Unleash Conqueror's Haki (Silent Aim)",
+   CurrentValue = false,
+   Callback = function(Value)
+        _G.G_S_SilentAimM1R = Value
+   end,
+})
+
+AimbotTab:CreateToggle({
+   Name = "Target Rival Pirates (Players)",
+   CurrentValue = false,
+   Callback = function(Value)
+        _G.G_S_SilentAimTargetPlayers = Value
+   end,
+})
+
+AimbotTab:CreateToggle({
+   Name = "Target Marine Grunts (NPC Mobs)",
+   CurrentValue = false,
+   Callback = function(Value)
+        _G.G_S_SilentAimTargetMobs = Value
+   end,
+})
+
+AimbotTab:CreateToggle({
+   Name = "Display Haki Perception Circle (FOV)",
+   CurrentValue = false,
+   Callback = function(Value)
+        _G.G_S_SilentAimShowFOV = Value
+   end,
+})
+
+AimbotTab:CreateSlider({
+   Name = "Haki Tracking Range (FOV Radius)",
+   Min = 50,
+   Max = 400,
+   CurrentValue = 150,
+   Flag = "FOV_Slider",
+   Callback = function(Value)
+        _G.G_S_SilentAimFOV = Value
+   end,
+})
+
+AimbotTab:CreateDropdown({
+   Name = "Lock Targeted Hitbox",
+   Options = {"HumanoidRootPart", "Head", "Torso"},
+   CurrentOption = {"HumanoidRootPart"},
+   MultipleOptions = false,
+   Callback = function(Option)
+        _G.G_S_SilentAimPart = Option
+   end,
+})
+
+-- ============================================================================
+-- TAB 3: COMBAT & MOVEMENT OPTIONS (GEAR 5 SPEED) - RESTORED AND FULLY FIXED
+-- ============================================================================
+MovementTab:CreateToggle({
+   Name = "Enable Gear 2 Attack Velocity",
+   CurrentValue = false,
+   Callback = function(Value)
+        _G.G_S_FastAttack = Value
+   end,
+})
+
+MovementTab:CreateDropdown({
+   Name = "Attack Frame Packet Mode",
+   Options = {"Mode 1", "Mode 2"},
+   CurrentOption = {"Mode 2"},
+   MultipleOptions = false,
+   Callback = function(Option)
+        _G.G_S_FastAttackMode = Option
+   end,
+})
+
+MovementTab:CreateToggle({
+   Name = "Gum-Gum Whip (Infinite Range)",
+   CurrentValue = false,
+   Callback = function(Value)
+        _G.G_S_InfiniteRange = Value
+   end,
+})
+
+MovementTab:CreateToggle({
+   Name = "Gear 4 Sky Walk (Infinite High Jump)",
+   CurrentValue = false,
+   Callback = function(Value)
+        _G.G_S_jumpEnabled = Value
+   end,
+})
+
+MovementTab:CreateSlider({
+   Name = "Sky Walk Jump Velocity",
+   Min = 50,
+   Max = 200,
+   CurrentValue = 50,
+   Flag = "Jump_Slider",
+   Callback = function(Value)
+        _G.G_S_jumpHeight = Value
+   end,
+})
+
+MovementTab:CreateToggle({
+   Name = "Walk Across The Sea (Jesus Mode)",
+   CurrentValue = false,
+   Callback = function(Value)
+        _G.G_S_WalkOnWater = Value
+   end,
+})
+
+-- ============================================================================
+-- THE AUTOMATED RUNTIME EXECUTOR MODULES
+-- ============================================================================
+local NetRemote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Net"):WaitForChild("RE/RegisterAttack")
+
+local function getWeaponTool()
+    local character = LocalPlayer.Character
+    if character then
+        local tool = character:FindFirstChildOfClass("Tool")
+        if tool then return tool.Name end
+    end
+    return nil
+end
+
+local function fireFastAttackStrike(targetPart)
+	if not getWeaponTool() then return end
+	pcall(function()
+		NetRemote:FireServer(0)
+	end)
+end
+
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        local character = LocalPlayer.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            
+            -- GUM-GUM AUTOMATED TELEPORT GRINDING
+            if _G.G_S_AttackMobs and Workspace:FindFirstChild("Enemies") then
+                for _, npc in ipairs(Workspace.Enemies:GetChildren()) do
+                    local hum = npc:FindFirstChildOfClass("Humanoid")
+                    local root = npc:FindFirstChild("HumanoidRootPart")
+                    if hum and root and hum.Health > 0 then
+                        character.HumanoidRootPart.CFrame = root.CFrame * CFrame.new(0, 0, 3)
+                        fireFastAttackStrike(root)
+                        break 
+                    end
+                end
+            end
+
+            -- SPEED EXECUTIONS
+            if _G.G_S_FastAttack and not _G.G_S_AttackMobs then
+                local attackThreshold = _G.G_S_InfiniteRange and 99999 or 40
+                
+                if _G.G_S_SilentAimTargetMobs and Workspace:FindFirstChild("Enemies") then
+                    for _, npc in ipairs(Workspace.Enemies:GetChildren()) do
+                        local hum = npc:FindFirstChildOfClass("Humanoid")
+                        local root = npc:FindFirstChild("HumanoidRootPart")
+                        if hum and root and hum.Health > 0 and (character.HumanoidRootPart.Position - root.Position).Magnitude <= attackThreshold then
+                            fireFastAttackStrike(root)
+                        end
+                    end
+                end
+
+                if _G.G_S_SilentAimTargetPlayers then
+                    for _, player in ipairs(Players:GetPlayers()) do
+                        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                            local hum = player.Character:FindFirstChildOfClass("Humanoid")
+                            local root = player.Character.HumanoidRootPart
+                            if hum and root and hum.Health > 0 and (character.HumanoidRootPart.Position - root.Position).Magnitude <= attackThreshold then
+                                fireFastAttackStrike(root)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+UIS.JumpRequest:Connect(function()
+    if _G.G_S_jumpEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid").JumpPower = _G.G_S_jumpHeight
+    end
+end)
+
+task.spawn(function()
+    while task.wait(0.5) do
+        pcall(function()
+            local mapSea = Workspace:FindFirstChild("Sea") or Workspace:FindFirstChild("Water")
+            if mapSea and mapSea:IsA("BasePart") then
+                mapSea.CanCollide = _G.G_S_WalkOnWater
+            end
+        end)
+    end
+end)
+
+-- METATABLE REDIRECTION FOR HOOKS
+local FOVCircle = Drawing.new("Circle")
+FOVCircle.Color = Color3.fromRGB(230, 30, 40)
+FOVCircle.Thickness = 2.5
+FOVCircle.Filled = false
+
+RunService.RenderStepped:Connect(function()
+    FOVCircle.Visible = _G.G_S_SilentAimShowFOV
+    FOVCircle.Radius = _G.G_S_SilentAimFOV
+FOVCircle.Position = UIS:GetMouseLocation()
+end)
+local function getClosestTargetToMouse()
+local targetCharacter = nil
+local maxDistance = _G.G_S_InfiniteRange and 99999 or _G.G_S_SilentAimFOV
+local mousePos = UIS:GetMouseLocation()
+local function evaluateTarget(character)
+if character and character:FindFirstChild(_G.G_S_SilentAimPart) then
+local enemyHum = character:FindFirstChildOfClass("Humanoid")
+if enemyHum and enemyHum.Health > 0 then
+local targetPart = character[_G.G_S_SilentAimPart]
+local screenPos, onScreen = Camera:WorldToViewportPoint(targetPart.Position)
+if onScreen or _G.G_S_InfiniteRange then
+local deltaDistance = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
+if deltaDistance < maxDistance then
+maxDistance = deltaDistance
+targetCharacter = character
+end
+end
+end
+end
+end
+if _G.G_S_SilentAimTargetPlayers then
+for _, player in ipairs(Players:GetPlayers()) do
+if player ~= LocalPlayer and (_G.G_S_SilentAimTeamCheck == false or player.Team ~= LocalPlayer.Team) then
+evaluateTarget(player.Character)
+end
+end
+end
+if _G.G_S_SilentAimTargetMobs and Workspace:FindFirstChild("Enemies") then
+for _, npc in ipairs(Workspace.Enemies:GetChildren()) do
+evaluateTarget(npc)
+end
+end
+return targetCharacter
+end
+local rawMetatable = getrawmetatable(game)
+local oldIndex = rawMetatable.__index
+setreadonly(rawMetatable, false)
+rawMetatable.__index = newcclosure(function(self, index)
+if _G.G_S_SilentAimM1R and tostring(self) == "Mouse" and (index == "Hit" or index == "Target") then
+local currentTarget = getClosestTargetToMouse()
+if currentTarget and currentTarget:FindFirstChild(_G.G_S_SilentAimPart) then
+if index == "Hit" then return currentTarget[_G.G_S_SilentAimPart].CFrame
+elseif index == "Target" then return currentTarget[_G.G_S_SilentAimPart] end
+end
+end
+return oldIndex(self, index)
+end)
+setreadonly(rawMetatable, true)
+Rayfield:Notify({
+Title = "THE KING OF PIRATES!",
+Content = "Siddhant Hub Luffy Edition fully restored.",
+Duration = 5,
+})
